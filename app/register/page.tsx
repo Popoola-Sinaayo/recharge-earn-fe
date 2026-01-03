@@ -1,36 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { registerUser } from '@/lib/api';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { Mail, Lock, User, Gift, Zap, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { registerUser } from "@/lib/api";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { Mail, Lock, User, Gift, Zap, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 const registerSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  referralCode: z.string().optional().refine((val) => !val || /^[A-Z0-9]{6}$/i.test(val), {
-    message: 'Referral code must be 6 alphanumeric characters',
-  }),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  referralCode: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^[A-Z0-9]{6}$/i.test(val), {
+      message: "Referral code must be 6 alphanumeric characters",
+    }),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [registrationData, setRegistrationData] = useState<RegisterFormData | null>(null);
-  const referralCodeFromUrl = searchParams.get('ref') || '';
+  const referralCodeFromUrl = searchParams.get("ref") || "";
 
   const {
     register,
@@ -46,25 +48,34 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (referralCodeFromUrl) {
-      setValue('referralCode', referralCodeFromUrl.toUpperCase());
+      setValue("referralCode", referralCodeFromUrl.toUpperCase());
     }
   }, [referralCodeFromUrl, setValue]);
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
-      setError('');
+      setError("");
       const response = await registerUser(data);
-      
+
       if (response.success) {
         // Store registration data for OTP verification
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('registrationData', JSON.stringify(data));
+        if (typeof window !== "undefined") {
+          localStorage.setItem("registrationData", JSON.stringify(data));
         }
         router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const error = err as {
+        response?: {
+          data?: { message?: string; errors?: Array<{ msg?: string }> };
+        };
+      };
+      setError(
+        error.response?.data?.message ||
+          error.response?.data?.errors?.[0]?.msg ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +119,7 @@ export default function RegisterPage() {
                 placeholder="John"
                 icon={<User className="w-5 h-5" />}
                 error={errors.firstName?.message}
-                {...register('firstName')}
+                {...register("firstName")}
               />
 
               <Input
@@ -117,7 +128,7 @@ export default function RegisterPage() {
                 placeholder="Doe"
                 icon={<User className="w-5 h-5" />}
                 error={errors.lastName?.message}
-                {...register('lastName')}
+                {...register("lastName")}
               />
             </div>
 
@@ -127,7 +138,7 @@ export default function RegisterPage() {
               placeholder="you@example.com"
               icon={<Mail className="w-5 h-5" />}
               error={errors.email?.message}
-              {...register('email')}
+              {...register("email")}
             />
 
             <Input
@@ -136,7 +147,7 @@ export default function RegisterPage() {
               placeholder="Create a password"
               icon={<Lock className="w-5 h-5" />}
               error={errors.password?.message}
-              {...register('password')}
+              {...register("password")}
             />
 
             <Input
@@ -145,8 +156,9 @@ export default function RegisterPage() {
               placeholder="ABC123"
               icon={<Gift className="w-5 h-5" />}
               error={errors.referralCode?.message}
-              {...register('referralCode', {
-                setValueAs: (value) => value ? value.toUpperCase().trim() : undefined,
+              {...register("referralCode", {
+                setValueAs: (value) =>
+                  value ? value.toUpperCase().trim() : undefined,
               })}
               maxLength={6}
               className="uppercase"
@@ -160,7 +172,7 @@ export default function RegisterPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link
                 href="/login"
                 className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
@@ -172,6 +184,20 @@ export default function RegisterPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0f172a]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
 

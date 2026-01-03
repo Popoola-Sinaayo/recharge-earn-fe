@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { InputHTMLAttributes, forwardRef } from 'react';
@@ -39,7 +40,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               focus:outline-none focus:ring-2 focus:ring-opacity-20
               ${className}
             `}
-            {...props}
+            {...(props as any)}
           />
         </div>
         {error && (

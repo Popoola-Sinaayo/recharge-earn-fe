@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { getWalletBalance, getWalletTransactions, initializePayment } from '@/lib/api';
@@ -25,7 +25,7 @@ const fundSchema = z.object({
 
 type FundFormData = z.infer<typeof fundSchema>;
 
-export default function WalletPage() {
+function WalletPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
@@ -470,6 +470,20 @@ export default function WalletPage() {
         </main>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense fallback={
+      <ProtectedRoute>
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0f172a]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
+        </div>
+      </ProtectedRoute>
+    }>
+      <WalletPageContent />
+    </Suspense>
   );
 }
 

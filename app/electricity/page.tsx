@@ -1,29 +1,30 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { useState } from 'react';
-import { useAuthStore } from '@/lib/store';
-import { verifyMeter, purchaseElectricity } from '@/lib/api';
-import ProtectedRoute from '@/components/layout/ProtectedRoute';
-import Navbar from '@/components/layout/Navbar';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { Bolt, Check, Loader2, Copy } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { formatCurrency, generateReference } from '@/lib/utils';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useAuthStore } from "@/lib/store";
+import { verifyMeter, purchaseElectricity } from "@/lib/api";
+import ProtectedRoute from "@/components/layout/ProtectedRoute";
+import Navbar from "@/components/layout/Navbar";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { Bolt, Check, Loader2, Copy } from "lucide-react";
+import { motion } from "framer-motion";
+import { formatCurrency, generateReference } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 const verifySchema = z.object({
   provider: z.string(),
-  plan_type: z.enum(['prepaid', 'postpaid']),
-  meter_number: z.string().min(10, 'Meter number must be at least 10 digits'),
+  plan_type: z.enum(["prepaid", "postpaid"]),
+  meter_number: z.string().min(10, "Meter number must be at least 10 digits"),
 });
 
 const purchaseSchema = z.object({
-  phone_number: z.string().min(10, 'Phone number is required'),
-  amount: z.number().min(100, 'Minimum amount is ₦100'),
+  phone_number: z.string().min(10, "Phone number is required"),
+  amount: z.number().min(100, "Minimum amount is ₦100"),
 });
 
 type VerifyFormData = z.infer<typeof verifySchema>;
@@ -31,23 +32,23 @@ type PurchaseFormData = z.infer<typeof purchaseSchema>;
 
 // Electricity providers with their plan IDs
 const electricityProviders = [
-  { name: 'KEDC', prepaid: 1, postpaid: 2 },
-  { name: 'EKEDC', prepaid: 3, postpaid: 4 },
-  { name: 'KEDCO', prepaid: 5, postpaid: 6 },
-  { name: 'PHED', prepaid: 7, postpaid: 8 },
-  { name: 'JED', prepaid: 9, postpaid: 10 },
-  { name: 'IBEDC', prepaid: 11, postpaid: 12 },
-  { name: 'KAEDCO', prepaid: 13, postpaid: 14 },
-  { name: 'AEDC', prepaid: 15, postpaid: 16 },
-  { name: 'EEDC', prepaid: 17, postpaid: 18 },
-  { name: 'BEDC', prepaid: 19, postpaid: 20 },
-  { name: 'ABA', prepaid: 22, postpaid: 23 },
-  { name: 'YEDC', prepaid: 24, postpaid: 25 },
+  { name: "KEDC", prepaid: 1, postpaid: 2 },
+  { name: "EKEDC", prepaid: 3, postpaid: 4 },
+  { name: "KEDCO", prepaid: 5, postpaid: 6 },
+  { name: "PHED", prepaid: 7, postpaid: 8 },
+  { name: "JED", prepaid: 9, postpaid: 10 },
+  { name: "IBEDC", prepaid: 11, postpaid: 12 },
+  { name: "KAEDCO", prepaid: 13, postpaid: 14 },
+  { name: "AEDC", prepaid: 15, postpaid: 16 },
+  { name: "EEDC", prepaid: 17, postpaid: 18 },
+  { name: "BEDC", prepaid: 19, postpaid: 20 },
+  { name: "ABA", prepaid: 22, postpaid: 23 },
+  { name: "YEDC", prepaid: 24, postpaid: 25 },
 ];
 
 export default function ElectricityPage() {
   const { user } = useAuthStore();
-  const [step, setStep] = useState<'verify' | 'purchase' | 'success'>('verify');
+  const [step, setStep] = useState<"verify" | "purchase" | "success">("verify");
   const [meterInfo, setMeterInfo] = useState<any>(null);
   const [planId, setPlanId] = useState<number>(15); // Default to AEDC prepaid
   const [isVerifying, setIsVerifying] = useState(false);
@@ -57,22 +58,27 @@ export default function ElectricityPage() {
   const verifyForm = useForm<VerifyFormData>({
     resolver: zodResolver(verifySchema),
     defaultValues: {
-      provider: 'AEDC',
-      plan_type: 'prepaid',
+      provider: "AEDC",
+      plan_type: "prepaid",
     },
   });
 
   // Calculate plan ID based on provider and plan type
-  const getPlanId = (provider: string, planType: 'prepaid' | 'postpaid'): number => {
-    const providerData = electricityProviders.find(p => p.name === provider);
+  const getPlanId = (
+    provider: string,
+    planType: "prepaid" | "postpaid"
+  ): number => {
+    const providerData = electricityProviders.find((p) => p.name === provider);
     if (!providerData) return 15; // Default to AEDC prepaid
-    return planType === 'prepaid' ? providerData.prepaid : providerData.postpaid;
+    return planType === "prepaid"
+      ? providerData.prepaid
+      : providerData.postpaid;
   };
 
   const purchaseForm = useForm<PurchaseFormData>({
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
-      phone_number: user?.phone || '',
+      phone_number: user?.phone || "",
     },
   });
 
@@ -86,12 +92,12 @@ export default function ElectricityPage() {
       });
 
       if (response.success) {
-        setMeterInfo(response.data.data);
+        setMeterInfo((response.data as any)?.data);
         setPlanId(calculatedPlanId);
-        setStep('purchase');
+        setStep("purchase");
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to verify meter');
+      alert(error.response?.data?.message || "Failed to verify meter");
     } finally {
       setIsVerifying(false);
     }
@@ -106,16 +112,19 @@ export default function ElectricityPage() {
         phone_number: data.phone_number,
         plan_id: planId,
         amount: data.amount,
-        meter_number: verifyForm.getValues('meter_number'),
+        meter_number: verifyForm.getValues("meter_number"),
       });
 
       if (response.success) {
         // Extract token from response if available
-        const token = (response.data as any)?.data?.token || (response.data as any)?.token || null;
+        const token =
+          (response.data as any)?.data?.token ||
+          (response.data as any)?.token ||
+          null;
         setElectricityToken(token);
-        setStep('success');
+        setStep("success");
         setTimeout(() => {
-          setStep('verify');
+          setStep("verify");
           verifyForm.reset();
           purchaseForm.reset();
           setMeterInfo(null);
@@ -123,7 +132,7 @@ export default function ElectricityPage() {
         }, 10000); // Give more time to view token
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to purchase electricity');
+      alert(error.response?.data?.message || "Failed to purchase electricity");
     } finally {
       setIsPurchasing(false);
     }
@@ -158,8 +167,11 @@ export default function ElectricityPage() {
             transition={{ delay: 0.1 }}
           >
             <Card>
-              {step === 'verify' && (
-                <form onSubmit={verifyForm.handleSubmit(onVerifySubmit)} className="space-y-6">
+              {step === "verify" && (
+                <form
+                  onSubmit={verifyForm.handleSubmit(onVerifySubmit)}
+                  className="space-y-6"
+                >
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Meter Number
@@ -168,7 +180,7 @@ export default function ElectricityPage() {
                       type="text"
                       placeholder="Enter your meter number"
                       error={verifyForm.formState.errors.meter_number?.message}
-                      {...verifyForm.register('meter_number')}
+                      {...verifyForm.register("meter_number")}
                     />
                   </div>
 
@@ -177,7 +189,7 @@ export default function ElectricityPage() {
                       Electricity Provider (Disco)
                     </label>
                     <select
-                      {...verifyForm.register('provider')}
+                      {...verifyForm.register("provider")}
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-[#334155] bg-white dark:bg-[#1e293b] text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-all"
                     >
                       {electricityProviders.map((provider) => (
@@ -196,13 +208,13 @@ export default function ElectricityPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          verifyForm.setValue('plan_type', 'prepaid');
-                          verifyForm.trigger('plan_type');
+                          verifyForm.setValue("plan_type", "prepaid");
+                          verifyForm.trigger("plan_type");
                         }}
                         className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 text-left ${
-                          verifyForm.watch('plan_type') === 'prepaid'
-                            ? 'bg-[#2563eb] dark:bg-[#3b82f6] text-white border-[#2563eb] dark:border-[#3b82f6] shadow-lg'
-                            : 'bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#334155] hover:border-blue-300 dark:hover:border-blue-700'
+                          verifyForm.watch("plan_type") === "prepaid"
+                            ? "bg-[#2563eb] dark:bg-[#3b82f6] text-white border-[#2563eb] dark:border-[#3b82f6] shadow-lg"
+                            : "bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#334155] hover:border-blue-300 dark:hover:border-blue-700"
                         }`}
                       >
                         <div>
@@ -215,13 +227,13 @@ export default function ElectricityPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          verifyForm.setValue('plan_type', 'postpaid');
-                          verifyForm.trigger('plan_type');
+                          verifyForm.setValue("plan_type", "postpaid");
+                          verifyForm.trigger("plan_type");
                         }}
                         className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 text-left ${
-                          verifyForm.watch('plan_type') === 'postpaid'
-                            ? 'bg-[#2563eb] dark:bg-[#3b82f6] text-white border-[#2563eb] dark:border-[#3b82f6] shadow-lg'
-                            : 'bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#334155] hover:border-blue-300 dark:hover:border-blue-700'
+                          verifyForm.watch("plan_type") === "postpaid"
+                            ? "bg-[#2563eb] dark:bg-[#3b82f6] text-white border-[#2563eb] dark:border-[#3b82f6] shadow-lg"
+                            : "bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#334155] hover:border-blue-300 dark:hover:border-blue-700"
                         }`}
                       >
                         <div>
@@ -239,7 +251,7 @@ export default function ElectricityPage() {
                     )}
                     <input
                       type="hidden"
-                      {...verifyForm.register('plan_type')}
+                      {...verifyForm.register("plan_type")}
                     />
                   </div>
 
@@ -248,38 +260,56 @@ export default function ElectricityPage() {
                       Selected Plan
                     </p>
                     <p className="font-semibold text-gray-900 dark:text-white">
-                      {verifyForm.watch('provider')} - {verifyForm.watch('plan_type') === 'prepaid' ? 'Prepaid' : 'Postpaid'}
+                      {verifyForm.watch("provider")} -{" "}
+                      {verifyForm.watch("plan_type") === "prepaid"
+                        ? "Prepaid"
+                        : "Postpaid"}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Plan ID: {getPlanId(verifyForm.watch('provider') || 'AEDC', verifyForm.watch('plan_type') || 'prepaid')}
+                      Plan ID:{" "}
+                      {getPlanId(
+                        verifyForm.watch("provider") || "AEDC",
+                        verifyForm.watch("plan_type") || "prepaid"
+                      )}
                     </p>
                   </div>
 
-                  <Button type="submit" isLoading={isVerifying} className="w-full">
+                  <Button
+                    type="submit"
+                    isLoading={isVerifying}
+                    className="w-full"
+                  >
                     Verify Meter
                   </Button>
                 </form>
               )}
 
-              {step === 'purchase' && meterInfo && (
+              {step === "purchase" && meterInfo && (
                 <div>
                   <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Meter Verified</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      Meter Verified
+                    </p>
                     <p className="font-semibold text-gray-900 dark:text-white">
-                      {meterInfo.customer_name || 'Customer'}
+                      {meterInfo.customer_name || "Customer"}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {meterInfo.address || meterInfo.meter_number}
                     </p>
                   </div>
 
-                  <form onSubmit={purchaseForm.handleSubmit(onPurchaseSubmit)} className="space-y-6">
+                  <form
+                    onSubmit={purchaseForm.handleSubmit(onPurchaseSubmit)}
+                    className="space-y-6"
+                  >
                     <Input
                       label="Phone Number"
                       type="tel"
                       placeholder="08012345678"
-                      error={purchaseForm.formState.errors.phone_number?.message}
-                      {...purchaseForm.register('phone_number')}
+                      error={
+                        purchaseForm.formState.errors.phone_number?.message
+                      }
+                      {...purchaseForm.register("phone_number")}
                     />
 
                     <Input
@@ -287,14 +317,20 @@ export default function ElectricityPage() {
                       type="number"
                       placeholder="Enter amount"
                       error={purchaseForm.formState.errors.amount?.message}
-                      {...purchaseForm.register('amount', { valueAsNumber: true })}
+                      {...purchaseForm.register("amount", {
+                        valueAsNumber: true,
+                      })}
                     />
 
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Total</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Total
+                        </span>
                         <span className="text-2xl font-bold text-[#2563eb] dark:text-[#3b82f6]">
-                          {purchaseForm.watch('amount') ? formatCurrency(purchaseForm.watch('amount')) : '₦0.00'}
+                          {purchaseForm.watch("amount")
+                            ? formatCurrency(purchaseForm.watch("amount"))
+                            : "₦0.00"}
                         </span>
                       </div>
                     </div>
@@ -304,14 +340,18 @@ export default function ElectricityPage() {
                         type="button"
                         variant="outline"
                         onClick={() => {
-                          setStep('verify');
+                          setStep("verify");
                           setMeterInfo(null);
                         }}
                         className="flex-1"
                       >
                         Back
                       </Button>
-                      <Button type="submit" isLoading={isPurchasing} className="flex-1">
+                      <Button
+                        type="submit"
+                        isLoading={isPurchasing}
+                        className="flex-1"
+                      >
                         Pay Now
                       </Button>
                     </div>
@@ -319,7 +359,7 @@ export default function ElectricityPage() {
                 </div>
               )}
 
-              {step === 'success' && (
+              {step === "success" && (
                 <div className="text-center py-8">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full mb-4">
                     <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
@@ -330,34 +370,37 @@ export default function ElectricityPage() {
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
                     Your electricity bill has been paid.
                   </p>
-                  
+
                   {electricityToken && (
                     <div className="mt-6 p-6 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-xl border-2 border-orange-200 dark:border-orange-800">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Your Electricity Token</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white font-mono tracking-wider mb-4">
-                      {electricityToken}
-                    </p>
-                    {meterInfo?.meter_number && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Meter: {meterInfo.meter_number}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        Your Electricity Token
                       </p>
-                    )}
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText(electricityToken);
-                      }}
-                      className="mt-2"
-                    >
-                      <Copy className="w-4 h-4" />
-                      Copy Token
-                    </Button>
-                    <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                      <p className="text-xs text-blue-800 dark:text-blue-200">
-                        <strong>Instructions:</strong> Enter this token into your prepaid meter to activate your electricity units.
+                      <p className="text-3xl font-bold text-gray-900 dark:text-white font-mono tracking-wider mb-4">
+                        {electricityToken}
                       </p>
+                      {meterInfo?.meter_number && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          Meter: {meterInfo.meter_number}
+                        </p>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(electricityToken);
+                        }}
+                        className="mt-2"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy Token
+                      </Button>
+                      <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                        <p className="text-xs text-blue-800 dark:text-blue-200">
+                          <strong>Instructions:</strong> Enter this token into
+                          your prepaid meter to activate your electricity units.
+                        </p>
+                      </div>
                     </div>
-                  </div>
                   )}
                 </div>
               )}
@@ -368,4 +411,3 @@ export default function ElectricityPage() {
     </ProtectedRoute>
   );
 }
-

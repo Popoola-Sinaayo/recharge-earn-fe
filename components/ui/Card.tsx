@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { HTMLAttributes } from 'react';
@@ -20,7 +21,7 @@ export default function Card({ className = '', hover = false, children, ...props
         ${hover ? 'cursor-pointer hover:shadow-xl hover:border-gray-300 dark:hover:border-[#475569]' : ''}
         ${className}
       `}
-      {...props}
+      {...(props as any)}
     >
       {children}
     </motion.div>
