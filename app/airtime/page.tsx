@@ -1,26 +1,32 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { useState } from 'react';
-import { useAuthStore } from '@/lib/store';
-import { purchaseAirtime } from '@/lib/api';
-import ProtectedRoute from '@/components/layout/ProtectedRoute';
-import Navbar from '@/components/layout/Navbar';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { Smartphone, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { formatCurrency, formatPhoneNumber, generateReference, validatePhoneNumber } from '@/lib/utils';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useAuthStore } from "@/lib/store";
+import { purchaseAirtime } from "@/lib/api";
+import ProtectedRoute from "@/components/layout/ProtectedRoute";
+import Navbar from "@/components/layout/Navbar";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { Smartphone, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  formatCurrency,
+  formatPhoneNumber,
+  generateReference,
+  validatePhoneNumber,
+} from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 const purchaseSchema = z.object({
   phone_number: z.string().refine((val) => validatePhoneNumber(val), {
-    message: 'Invalid phone number format',
+    message: "Invalid phone number format",
   }),
-  amount: z.number().min(50, 'Minimum amount is ₦50'),
-  network: z.enum(['MTN', 'AIRTEL', 'GLO', '9MOBILE']),
+  amount: z.number().min(50, "Minimum amount is ₦50"),
+  network: z.enum(["MTN", "AIRTEL", "GLO", "9MOBILE"]),
 });
 
 type PurchaseFormData = z.infer<typeof purchaseSchema>;
@@ -36,16 +42,17 @@ export default function AirtimePage() {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm<PurchaseFormData>({
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
-      phone_number: user?.phone || '',
-      network: 'MTN',
+      phone_number: user?.phone || "",
+      network: "MTN",
     },
   });
 
   const quickAmounts = [100, 200, 500, 1000, 2000, 5000];
-  const networks = ['MTN', 'AIRTEL', 'GLO', '9MOBILE'];
+  const networks = ["MTN", "AIRTEL", "GLO", "9MOBILE"];
 
   const onSubmit = async (data: PurchaseFormData) => {
     try {
@@ -65,7 +72,7 @@ export default function AirtimePage() {
         }, 3000);
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to purchase airtime');
+      alert(error.response?.data?.message || "Failed to purchase airtime");
     } finally {
       setIsPurchasing(false);
     }
@@ -114,6 +121,18 @@ export default function AirtimePage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <Input
+                    label="Phone Number"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    error={errors.phone_number?.message}
+                    {...register("phone_number")}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      e.target.value = formatted;
+                      register("phone_number").onChange(e);
+                    }}
+                  />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Select Network
@@ -124,12 +143,14 @@ export default function AirtimePage() {
                           key={network}
                           type="button"
                           onClick={() => {
-                            register('network').onChange({ target: { value: network } });
+                            console.log(network);
+                            setValue("network", network as any);
+                            // register('network').onChange({ target: { value: network } });
                           }}
                           className={`px-4 py-3 rounded-xl font-semibold transition-all ${
-                            watch('network') === network
-                              ? 'bg-[#2563eb] dark:bg-[#3b82f6] text-white shadow-lg'
-                              : 'bg-gray-100 dark:bg-[#334155] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            watch("network") === network
+                              ? "bg-[#2563eb] dark:bg-[#3b82f6] text-white shadow-lg"
+                              : "bg-gray-100 dark:bg-[#334155] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                           }`}
                         >
                           {network}
@@ -143,19 +164,6 @@ export default function AirtimePage() {
                     )}
                   </div>
 
-                  <Input
-                    label="Phone Number"
-                    type="tel"
-                    placeholder="08012345678"
-                    error={errors.phone_number?.message}
-                    {...register('phone_number')}
-                    onChange={(e) => {
-                      const formatted = formatPhoneNumber(e.target.value);
-                      e.target.value = formatted;
-                      register('phone_number').onChange(e);
-                    }}
-                  />
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Amount (NGN)
@@ -166,12 +174,13 @@ export default function AirtimePage() {
                           key={amount}
                           type="button"
                           onClick={() => {
-                            register('amount').onChange({ target: { value: amount } });
+                            setValue("amount", amount as any);
+                            // register('amount').onChange({ target: { value: amount } });
                           }}
                           className={`px-4 py-3 rounded-xl font-semibold transition-all ${
-                            watch('amount') === amount
-                              ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-2 border-blue-500'
-                              : 'bg-gray-100 dark:bg-[#334155] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            watch("amount") === amount
+                              ? "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-2 border-blue-500"
+                              : "bg-gray-100 dark:bg-[#334155] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                           }`}
                         >
                           ₦{amount}
@@ -182,20 +191,28 @@ export default function AirtimePage() {
                       type="number"
                       placeholder="Or enter custom amount"
                       error={errors.amount?.message}
-                      {...register('amount', { valueAsNumber: true })}
+                      {...register("amount", { valueAsNumber: true })}
                     />
                   </div>
 
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Total</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Total
+                      </span>
                       <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {watch('amount') ? formatCurrency(watch('amount')) : '₦0.00'}
+                        {watch("amount")
+                          ? formatCurrency(watch("amount"))
+                          : "₦0.00"}
                       </span>
                     </div>
                   </div>
 
-                  <Button type="submit" isLoading={isPurchasing} className="w-full">
+                  <Button
+                    type="submit"
+                    isLoading={isPurchasing}
+                    className="w-full"
+                  >
                     Purchase Airtime
                   </Button>
                 </form>
@@ -207,4 +224,3 @@ export default function AirtimePage() {
     </ProtectedRoute>
   );
 }
-

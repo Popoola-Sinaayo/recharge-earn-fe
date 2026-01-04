@@ -82,6 +82,7 @@ export default function DataPage() {
         phone_number: formatPhoneNumber(data.phone_number),
         plan_id: selectedPlan.id,
         reference: generateReference(),
+        network: selectedNetwork,
       });
 
       if (response.success) {

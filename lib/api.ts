@@ -267,6 +267,7 @@ export const purchaseData = async (data: {
   phone_number: string;
   plan_id: number;
   reference: string;
+  network: string;
 }): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post('/utilities/data_purchase', data);
   return response.data;

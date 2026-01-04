@@ -32,7 +32,7 @@ type PurchaseFormData = z.infer<typeof purchaseSchema>;
 
 // Electricity providers with their plan IDs
 const electricityProviders = [
-  { name: "KEDC", prepaid: 1, postpaid: 2 },
+  { name: "IKEDC", prepaid: 1, postpaid: 2 },
   { name: "EKEDC", prepaid: 3, postpaid: 4 },
   { name: "KEDCO", prepaid: 5, postpaid: 6 },
   { name: "PHED", prepaid: 7, postpaid: 8 },
@@ -92,7 +92,7 @@ export default function ElectricityPage() {
       });
 
       if (response.success) {
-        setMeterInfo((response.data as any)?.data);
+        setMeterInfo((response.data as any));
         setPlanId(calculatedPlanId);
         setStep("purchase");
       }
@@ -291,10 +291,10 @@ export default function ElectricityPage() {
                       Meter Verified
                     </p>
                     <p className="font-semibold text-gray-900 dark:text-white">
-                      {meterInfo.customer_name || "Customer"}
+                      {meterInfo.Customer_Name || "Customer"}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {meterInfo.address || meterInfo.meter_number}
+                      {meterInfo.Address || meterInfo.Meter_Number}
                     </p>
                   </div>
 
@@ -379,9 +379,9 @@ export default function ElectricityPage() {
                       <p className="text-3xl font-bold text-gray-900 dark:text-white font-mono tracking-wider mb-4">
                         {electricityToken}
                       </p>
-                      {meterInfo?.meter_number && (
+                      {meterInfo?.Meter_Number && (
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Meter: {meterInfo.meter_number}
+                          Meter: {meterInfo.Meter_Number}
                         </p>
                       )}
                       <Button
