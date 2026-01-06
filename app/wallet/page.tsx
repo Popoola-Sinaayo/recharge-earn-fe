@@ -162,11 +162,15 @@ function WalletPageContent() {
             <Card className="bg-[#2563eb] dark:bg-[#3b82f6] text-white border-0">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <p className="text-blue-100 mb-2">Available Balance</p>
+                  <p className="text-blue-500 dark:text-blue-100 mb-2">
+                    Available Balance
+                  </p>
                   {isLoading ? (
                     <div className="h-12 w-48 bg-blue-500/50 rounded-lg animate-pulse" />
                   ) : (
-                    <h2 className="text-5xl font-bold">{formatCurrency(balance)}</h2>
+                    <h2 className="text-5xl font-bold dark:text-white text-gray-900">
+                      {formatCurrency(balance)}
+                    </h2>
                   )}
                 </div>
                 <div className="p-4 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -187,21 +191,21 @@ function WalletPageContent() {
           {/* Tabs */}
           <div className="flex gap-2 mb-6">
             <button
-              onClick={() => router.push('/wallet')}
+              onClick={() => router.push("/wallet")}
               className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'overview'
-                  ? 'bg-[#2563eb] dark:bg-[#3b82f6] text-white'
-                  : 'bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#334155]'
+                activeTab === "overview"
+                  ? "bg-[#2563eb] dark:bg-[#3b82f6] text-white"
+                  : "bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#334155]"
               }`}
             >
               Overview
             </button>
             <button
-              onClick={() => router.push('/wallet?tab=transactions')}
+              onClick={() => router.push("/wallet?tab=transactions")}
               className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                activeTab === 'transactions'
-                  ? 'bg-[#2563eb] dark:bg-[#3b82f6] text-white'
-                  : 'bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#334155]'
+                activeTab === "transactions"
+                  ? "bg-[#2563eb] dark:bg-[#3b82f6] text-white"
+                  : "bg-white dark:bg-[#1e293b] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#334155]"
               }`}
             >
               <History className="w-5 h-5" />
@@ -210,7 +214,7 @@ function WalletPageContent() {
           </div>
 
           {/* Content */}
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -223,11 +227,13 @@ function WalletPageContent() {
                     <ArrowDownLeft className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">Total Credits</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Total Credits
+                    </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {formatCurrency(
                         transactions
-                          .filter((t) => t.type === 'credit')
+                          .filter((t) => t.type === "credit")
                           .reduce((sum, t) => sum + t.amount, 0)
                       )}
                     </p>
@@ -241,11 +247,13 @@ function WalletPageContent() {
                     <ArrowUpRight className="w-6 h-6 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">Total Debits</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Total Debits
+                    </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {formatCurrency(
                         transactions
-                          .filter((t) => t.type === 'debit')
+                          .filter((t) => t.type === "debit")
                           .reduce((sum, t) => sum + t.amount, 0)
                       )}
                     </p>
@@ -255,7 +263,7 @@ function WalletPageContent() {
             </motion.div>
           )}
 
-          {activeTab === 'transactions' && (
+          {activeTab === "transactions" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -284,14 +292,21 @@ function WalletPageContent() {
                 {isLoading ? (
                   <div className="space-y-4">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="h-16 bg-gray-100 dark:bg-[#334155] rounded-lg animate-pulse" />
+                      <div
+                        key={i}
+                        className="h-16 bg-gray-100 dark:bg-[#334155] rounded-lg animate-pulse"
+                      />
                     ))}
                   </div>
                 ) : filteredTransactions.length === 0 ? (
                   <div className="text-center py-12">
                     <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 dark:text-gray-400">
-                      {selectedCategory === 'all' ? 'No transactions yet' : `No ${getTransactionCategoryLabel(selectedCategory).toLowerCase()} transactions`}
+                      {selectedCategory === "all"
+                        ? "No transactions yet"
+                        : `No ${getTransactionCategoryLabel(
+                            selectedCategory
+                          ).toLowerCase()} transactions`}
                     </p>
                   </div>
                 ) : (
@@ -303,12 +318,20 @@ function WalletPageContent() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4 flex-1">
-                            <div className={`p-3 rounded-xl ${getCategoryColor(transaction.category, transaction.type)}`}>
+                            <div
+                              className={`p-3 rounded-xl ${getCategoryColor(
+                                transaction.category,
+                                transaction.type
+                              )}`}
+                            >
                               {getCategoryIcon(transaction.category)}
                             </div>
                             <div className="flex-1">
                               <p className="font-semibold text-gray-900 dark:text-white">
-                                {transaction.description || getTransactionCategoryLabel(transaction.category)}
+                                {transaction.description ||
+                                  getTransactionCategoryLabel(
+                                    transaction.category
+                                  )}
                               </p>
                               <div className="flex items-center gap-2 mt-1">
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -331,33 +354,39 @@ function WalletPageContent() {
                                   </>
                                 )}
                               </div>
-                              {transaction.category === 'electricity_purchase' && transaction.token && (
-                                <button
-                                  onClick={() => setShowTokenModal({ 
-                                    token: transaction.token!, 
-                                    meterNumber: transaction.metadata?.meter_number as string 
-                                  })}
-                                  className="mt-2 text-sm text-[#2563eb] dark:text-[#3b82f6] hover:underline font-medium"
-                                >
-                                  View Electricity Token →
-                                </button>
-                              )}
-                              {transaction.category === 'refund' && transaction.metadata?.reason && (
-                                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                  Reason: {transaction.metadata.reason}
-                                </p>
-                              )}
+                              {transaction.category ===
+                                "electricity_purchase" &&
+                                transaction.token && (
+                                  <button
+                                    onClick={() =>
+                                      setShowTokenModal({
+                                        token: transaction.token!,
+                                        meterNumber: transaction.metadata
+                                          ?.meter_number as string,
+                                      })
+                                    }
+                                    className="mt-2 text-sm text-[#2563eb] dark:text-[#3b82f6] hover:underline font-medium"
+                                  >
+                                    View Electricity Token →
+                                  </button>
+                                )}
+                              {transaction.category === "refund" &&
+                                transaction.metadata?.reason && (
+                                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                    Reason: {transaction.metadata.reason}
+                                  </p>
+                                )}
                             </div>
                           </div>
                           <div className="text-right">
                             <p
                               className={`font-bold text-lg ${
-                                transaction.type === 'credit'
-                                  ? 'text-green-600 dark:text-green-400'
-                                  : 'text-red-600 dark:text-red-400'
+                                transaction.type === "credit"
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400"
                               }`}
                             >
-                              {transaction.type === 'credit' ? '+' : '-'}
+                              {transaction.type === "credit" ? "+" : "-"}
                               {formatCurrency(transaction.amount)}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -388,7 +417,9 @@ function WalletPageContent() {
             {showTokenModal && (
               <div className="space-y-6">
                 <div className="p-6 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-xl border-2 border-orange-200 dark:border-orange-800">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Your Electricity Token</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Your Electricity Token
+                  </p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white font-mono tracking-wider text-center mb-4">
                     {showTokenModal.token}
                   </p>
@@ -400,7 +431,8 @@ function WalletPageContent() {
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Instructions:</strong> Enter this token into your prepaid meter to activate your electricity units.
+                    <strong>Instructions:</strong> Enter this token into your
+                    prepaid meter to activate your electricity units.
                   </p>
                 </div>
                 <div className="flex gap-4">
@@ -439,7 +471,7 @@ function WalletPageContent() {
                 label="Email"
                 type="email"
                 error={errors.email?.message}
-                {...register('email')}
+                {...register("email")}
                 disabled
               />
               <Input
@@ -447,7 +479,7 @@ function WalletPageContent() {
                 type="number"
                 placeholder="Enter amount"
                 error={errors.amount?.message}
-                {...register('amount', { valueAsNumber: true })}
+                {...register("amount", { valueAsNumber: true })}
               />
               <div className="flex gap-4">
                 <Button
