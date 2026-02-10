@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/Navbar";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import ConfirmPurchaseModal from "@/components/ui/ConfirmPurchaseModal";
 import { Bolt, Check, Loader2, Copy } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatCurrency, generateReference } from "@/lib/utils";
@@ -54,6 +55,7 @@ export default function ElectricityPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [electricityToken, setElectricityToken] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const verifyForm = useForm<VerifyFormData>({
     resolver: zodResolver(verifySchema),
@@ -92,7 +94,7 @@ export default function ElectricityPage() {
       });
 
       if (response.success) {
-        setMeterInfo((response.data as any));
+        setMeterInfo((response.data as any)?.data);
         setPlanId(calculatedPlanId);
         setStep("purchase");
       }
@@ -103,11 +105,17 @@ export default function ElectricityPage() {
     }
   };
 
-  const onPurchaseSubmit = async (data: PurchaseFormData) => {
+  const onConfirmOpen = () => {
+    setShowConfirmModal(true);
+  };
+
+  const onConfirmSubmit = async () => {
+    const data = purchaseForm.getValues();
     if (!meterInfo) return;
 
     try {
       setIsPurchasing(true);
+      setShowConfirmModal(false);
       const response = await purchaseElectricity({
         phone_number: data.phone_number,
         plan_id: planId,
@@ -116,7 +124,6 @@ export default function ElectricityPage() {
       });
 
       if (response.success) {
-        // Extract token from response if available
         const token =
           (response.data as any)?.data?.token ||
           (response.data as any)?.token ||
@@ -129,7 +136,7 @@ export default function ElectricityPage() {
           purchaseForm.reset();
           setMeterInfo(null);
           setElectricityToken(null);
-        }, 10000); // Give more time to view token
+        }, 10000);
       }
     } catch (error: any) {
       alert(error.response?.data?.message || "Failed to purchase electricity");
@@ -291,15 +298,15 @@ export default function ElectricityPage() {
                       Meter Verified
                     </p>
                     <p className="font-semibold text-gray-900 dark:text-white">
-                      {meterInfo.Customer_Name || "Customer"}
+                      {meterInfo.customer_name || "Customer"}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {meterInfo.Address || meterInfo.Meter_Number}
+                      {meterInfo.address || meterInfo.meter_number}
                     </p>
                   </div>
 
                   <form
-                    onSubmit={purchaseForm.handleSubmit(onPurchaseSubmit)}
+                    onSubmit={purchaseForm.handleSubmit(onConfirmOpen)}
                     className="space-y-6"
                   >
                     <Input
@@ -347,15 +354,42 @@ export default function ElectricityPage() {
                       >
                         Back
                       </Button>
-                      <Button
-                        type="submit"
-                        isLoading={isPurchasing}
-                        className="flex-1"
-                      >
+                      <Button type="submit" className="flex-1">
                         Pay Now
                       </Button>
                     </div>
                   </form>
+
+                  <ConfirmPurchaseModal
+                    isOpen={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={onConfirmSubmit}
+                    title="Confirm Electricity Purchase"
+                    details={[
+                      {
+                        label: "Meter Number",
+                        value: verifyForm.getValues("meter_number") || "",
+                      },
+                      {
+                        label: "Provider",
+                        value: verifyForm.watch("provider") || "",
+                      },
+                      {
+                        label: "Plan Type",
+                        value:
+                          verifyForm.watch("plan_type") === "prepaid"
+                            ? "Prepaid"
+                            : "Postpaid",
+                      },
+                      {
+                        label: "Phone Number",
+                        value: purchaseForm.watch("phone_number") || "",
+                      },
+                    ]}
+                    amount={purchaseForm.watch("amount") || 0}
+                    isLoading={isPurchasing}
+                    confirmLabel="Confirm & Pay"
+                  />
                 </div>
               )}
 
@@ -379,9 +413,9 @@ export default function ElectricityPage() {
                       <p className="text-3xl font-bold text-gray-900 dark:text-white font-mono tracking-wider mb-4">
                         {electricityToken}
                       </p>
-                      {meterInfo?.Meter_Number && (
+                      {meterInfo?.meter_number && (
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Meter: {meterInfo.Meter_Number}
+                          Meter: {meterInfo.meter_number}
                         </p>
                       )}
                       <Button

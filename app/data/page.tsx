@@ -10,6 +10,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
+import ConfirmPurchaseModal from '@/components/ui/ConfirmPurchaseModal';
 import { Wifi, Check, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatCurrency, formatPhoneNumber, generateReference, validatePhoneNumber } from '@/lib/utils';
@@ -32,9 +33,11 @@ export default function DataPage() {
   const [selectedNetwork, setSelectedNetwork] = useState<string>('MTN');
   const [selectedPlan, setSelectedPlan] = useState<DataPlan | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  const [pendingPhone, setPendingPhone] = useState<string>('');
 
   const {
     register,
@@ -73,21 +76,27 @@ export default function DataPage() {
     setPurchaseSuccess(false);
   };
 
-  const onSubmit = async (data: PurchaseFormData) => {
+  const onConfirmOpen = (data: PurchaseFormData) => {
+    setPendingPhone(formatPhoneNumber(data.phone_number));
+    setShowConfirmModal(true);
+  };
+
+  const onConfirmSubmit = async () => {
     if (!selectedPlan) return;
 
     try {
       setIsPurchasing(true);
+      setShowConfirmModal(false);
       const response = await purchaseData({
-        phone_number: formatPhoneNumber(data.phone_number),
+        phone_number: pendingPhone,
         plan_id: selectedPlan.id,
         reference: generateReference(),
-        network: selectedNetwork,
       });
 
       if (response.success) {
         setPurchaseSuccess(true);
         reset();
+        setPendingPhone('');
         setTimeout(() => {
           setIsModalOpen(false);
           setPurchaseSuccess(false);
@@ -226,7 +235,7 @@ export default function DataPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={handleSubmit(onConfirmOpen)} className="space-y-6">
                 {selectedPlan && (
                   <div className="p-4 bg-gray-50 dark:bg-[#1e293b] rounded-xl">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Plan</p>
@@ -260,13 +269,35 @@ export default function DataPage() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" isLoading={isPurchasing} className="flex-1">
-                    Confirm Purchase
+                  <Button type="submit" className="flex-1">
+                    Continue
                   </Button>
                 </div>
               </form>
             )}
           </Modal>
+
+          <ConfirmPurchaseModal
+            isOpen={showConfirmModal}
+            onClose={() => {
+              setShowConfirmModal(false);
+              setPendingPhone('');
+            }}
+            onConfirm={onConfirmSubmit}
+            title="Confirm Data Purchase"
+            details={
+              selectedPlan && pendingPhone
+                ? [
+                    { label: 'Plan', value: selectedPlan.name },
+                    { label: 'Phone Number', value: pendingPhone },
+                    { label: 'Network', value: selectedNetwork },
+                  ]
+                : []
+            }
+            amount={selectedPlan ? parseFloat(selectedPlan.wallet_price || selectedPlan.price) : 0}
+            isLoading={isPurchasing}
+            confirmLabel="Confirm & Purchase"
+          />
         </main>
       </div>
     </ProtectedRoute>

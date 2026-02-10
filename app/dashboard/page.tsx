@@ -105,15 +105,11 @@ export default function DashboardPage() {
             <Card className="bg-[#2563eb] dark:bg-[#3b82f6] text-white border-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="dark:text-blue-100 text-blue-500 mb-2">
-                    Wallet Balance
-                  </p>
+                  <p className="text-blue-100 mb-2">Wallet Balance</p>
                   {isLoading ? (
                     <div className="h-12 w-48 bg-blue-500/50 rounded-lg animate-pulse" />
                   ) : (
-                    <h2 className="text-4xl font-bold dark:text-white text-gray-900">
-                      {formatCurrency(balance)}
-                    </h2>
+                    <h2 className="text-4xl font-bold">{formatCurrency(balance)}</h2>
                   )}
                 </div>
                 <Link href="/wallet">
@@ -131,7 +127,7 @@ export default function DashboardPage() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full py-3 bg-gray-100 dark:bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-colors dark:text-white text-gray-900"
+                    className="w-full py-3 bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-colors"
                   >
                     Fund Wallet
                   </motion.button>
@@ -140,7 +136,7 @@ export default function DashboardPage() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full py-3 bg-gray-100 dark:bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-colors dark:text-white text-gray-900"
+                    className="w-full py-3 bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-colors"
                   >
                     View History
                   </motion.button>
@@ -170,16 +166,10 @@ export default function DashboardPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 + index * 0.1 }}
                       whileHover={{ y: -5 }}
-                      className="h-full"
+                      className='h-full'
                     >
                       <Card hover className="h-full">
-                        <div
-                          className={`w-14 h-14 rounded-xl ${
-                            service.color.includes("bg-")
-                              ? service.color
-                              : `bg-gradient-to-r ${service.color}`
-                          } flex items-center justify-center mb-4`}
-                        >
+                        <div className={`w-14 h-14 rounded-xl ${service.color.includes('bg-') ? service.color : `bg-gradient-to-r ${service.color}`} flex items-center justify-center mb-4`}>
                           <Icon className="w-7 h-7 text-white" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -221,12 +211,8 @@ export default function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-                    Active Services
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    4
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Active Services</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">4</p>
                 </div>
                 <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-xl">
                   <Zap className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -236,12 +222,8 @@ export default function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-                    Account Status
-                  </p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    Active
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Account Status</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">Active</p>
                 </div>
                 <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
                   <Activity className="w-6 h-6 text-[#2563eb] dark:text-[#3b82f6]" />

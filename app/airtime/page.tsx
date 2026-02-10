@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/Navbar";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import ConfirmPurchaseModal from "@/components/ui/ConfirmPurchaseModal";
 import { Smartphone, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -35,6 +36,8 @@ export default function AirtimePage() {
   const { user } = useAuthStore();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingData, setPendingData] = useState<PurchaseFormData | null>(null);
 
   const {
     register,
@@ -54,22 +57,28 @@ export default function AirtimePage() {
   const quickAmounts = [100, 200, 500, 1000, 2000, 5000];
   const networks = ["MTN", "AIRTEL", "GLO", "9MOBILE"];
 
-  const onSubmit = async (data: PurchaseFormData) => {
+  const onConfirmOpen = (data: PurchaseFormData) => {
+    setPendingData(data);
+    setShowConfirmModal(true);
+  };
+
+  const onConfirmSubmit = async () => {
+    if (!pendingData) return;
     try {
       setIsPurchasing(true);
+      setShowConfirmModal(false);
       const response = await purchaseAirtime({
-        phone_number: formatPhoneNumber(data.phone_number),
-        amount: data.amount,
-        network: data.network,
+        phone_number: formatPhoneNumber(pendingData.phone_number),
+        amount: pendingData.amount,
+        network: pendingData.network,
         reference: generateReference(),
       });
 
       if (response.success) {
         setPurchaseSuccess(true);
+        setPendingData(null);
         reset();
-        setTimeout(() => {
-          setPurchaseSuccess(false);
-        }, 3000);
+        setTimeout(() => setPurchaseSuccess(false), 3000);
       }
     } catch (error: any) {
       alert(error.response?.data?.message || "Failed to purchase airtime");
@@ -120,7 +129,7 @@ export default function AirtimePage() {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={handleSubmit(onConfirmOpen)} className="space-y-6">
                   <Input
                     label="Phone Number"
                     type="tel"
@@ -208,16 +217,34 @@ export default function AirtimePage() {
                     </div>
                   </div>
 
-                  <Button
-                    type="submit"
-                    isLoading={isPurchasing}
-                    className="w-full"
-                  >
+                  <Button type="submit" className="w-full">
                     Purchase Airtime
                   </Button>
                 </form>
               )}
             </Card>
+
+            <ConfirmPurchaseModal
+              isOpen={showConfirmModal}
+              onClose={() => {
+                setShowConfirmModal(false);
+                setPendingData(null);
+              }}
+              onConfirm={onConfirmSubmit}
+              title="Confirm Airtime Purchase"
+              details={
+                pendingData
+                  ? [
+                      { label: "Phone Number", value: formatPhoneNumber(pendingData.phone_number) },
+                      { label: "Network", value: pendingData.network },
+                      { label: "Amount", value: pendingData.amount },
+                    ]
+                  : []
+              }
+              amount={pendingData?.amount ?? 0}
+              isLoading={isPurchasing}
+              confirmLabel="Confirm & Purchase"
+            />
           </motion.div>
         </main>
       </div>

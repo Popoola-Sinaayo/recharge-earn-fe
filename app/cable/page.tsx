@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ConfirmPurchaseModal from '@/components/ui/ConfirmPurchaseModal';
 import { Tv, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { generateReference } from '@/lib/utils';
@@ -34,6 +35,8 @@ export default function CablePage() {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSmartcard, setPendingSmartcard] = useState<string>('');
 
   const {
     register,
@@ -45,20 +48,26 @@ export default function CablePage() {
     resolver: zodResolver(purchaseSchema),
   });
 
-  const onSubmit = async (data: PurchaseFormData) => {
+  const onConfirmOpen = (data: PurchaseFormData) => {
+    setPendingSmartcard(data.smartcard_number);
+    setShowConfirmModal(true);
+  };
+
+  const onConfirmSubmit = async () => {
+    if (!selectedPlan) return;
     try {
       setIsPurchasing(true);
+      setShowConfirmModal(false);
       const response = await purchaseCable({
-        smartcard_number: data.smartcard_number,
-        plan_id: data.plan_id,
+        smartcard_number: pendingSmartcard,
+        plan_id: selectedPlan,
       });
 
       if (response.success) {
         setPurchaseSuccess(true);
+        setPendingSmartcard('');
         reset();
-        setTimeout(() => {
-          setPurchaseSuccess(false);
-        }, 3000);
+        setTimeout(() => setPurchaseSuccess(false), 3000);
       }
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to purchase cable subscription');
@@ -162,7 +171,7 @@ export default function CablePage() {
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <form onSubmit={handleSubmit(onConfirmOpen)} className="space-y-6">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                       Complete Purchase
                     </h3>
@@ -196,7 +205,6 @@ export default function CablePage() {
 
                     <Button
                       type="submit"
-                      isLoading={isPurchasing}
                       className="w-full"
                       disabled={!selectedPlan}
                     >
@@ -204,6 +212,34 @@ export default function CablePage() {
                     </Button>
                   </form>
                 )}
+
+                <ConfirmPurchaseModal
+                  isOpen={showConfirmModal}
+                  onClose={() => {
+                    setShowConfirmModal(false);
+                    setPendingSmartcard('');
+                  }}
+                  onConfirm={onConfirmSubmit}
+                  title="Confirm Cable Subscription"
+                  details={
+                    selectedPlan && pendingSmartcard
+                      ? [
+                          { label: 'Smartcard Number', value: pendingSmartcard },
+                          {
+                            label: 'Plan',
+                            value: cablePlans.find((p) => p.id === selectedPlan)?.name ?? '',
+                          },
+                          {
+                            label: 'Provider',
+                            value: cablePlans.find((p) => p.id === selectedPlan)?.provider ?? '',
+                          },
+                        ]
+                      : []
+                  }
+                  amount={selectedPlan ? (cablePlans.find((p) => p.id === selectedPlan)?.price ?? 0) : 0}
+                  isLoading={isPurchasing}
+                  confirmLabel="Confirm & Subscribe"
+                />
               </Card>
             </motion.div>
           </div>
